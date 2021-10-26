@@ -1,1 +1,1 @@
-# JuliaSimulation
+# InferenceSimulation
