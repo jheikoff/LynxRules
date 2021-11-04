@@ -1,1 +1,0 @@
-To add RuleLynx package to Julia type 'dev RuleLynx' in the REPL.
