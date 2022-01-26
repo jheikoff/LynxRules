@@ -6,6 +6,9 @@
 iswildcard(::Any) = false
 iswildcard(x::Symbol) = x === :_
 
+isdunderwildcard(::Any) = false
+isdunderwildcard(x::Symbol) = x === :__
+
 "Returns true when its argument is a variable symbol."
 isvariable(::Any) = false
-isvariable(x::Symbol) = !iswildcard(x) && string(x)[1] === '_'
+isvariable(x::Symbol) = !iswildcard(x) && !isdunderwildcard(x) && string(x)[1] === '_'

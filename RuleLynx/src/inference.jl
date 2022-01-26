@@ -17,10 +17,22 @@ mutable struct Inference
 	next_seq::Int64
 	working_memory::SortedDict{Int64, Assertion}
 	assertion_index::Dict{Fact, Assertion}
+	match_index::Dict{Symbol, Vector{MatchNode}}
+	initial_join::JoinNode
+	rule_nodes::Vector{RuleNode}
+	agenda::SortedDict{Int, Vector{RuleInstance}}
+	rule::Union{Nothing, Rule}
+	strategy::Symbol
     Inference() = new(false,
 	                  1,
 	                  SortedDict{Int64, Assertion}(),
-					  Dict{Fact, Assertion}())
+					  Dict{Fact, Assertion}(),
+					  Dict{Symbol, Vector{MatchNode}}(),
+					  JoinNode(AbstractNode[], Match[], nothing, nothing, nothing, Function[], Counts()),
+					  RuleNode[],
+					  SortedDict{Int, Vector{RuleInstance}}(Base.Order.Reverse),
+					  nothing,
+					  :depth)
 end
 
 # The current inference is a global variable designating the currently active
@@ -29,26 +41,46 @@ end
 # current_inference::Union{Inference, Nothing} = nothing
 
 "The current active inference"
-current_inference = nothing # Union{Inference, Nothing}
+current_inference = Inference() # Union{Inference, Nothing}
 
-function current_inference!(inference::Union{Inference, Nothing})
+function current_inference!(inference::Union{Inference, Nothing})::Nothing
 	global current_inference = inference
 	return nothing
 end
 
-current_inference_trace() = current_inference.trace
+current_inference_trace()::Bool = current_inference.trace
 
 current_inference_trace!(trace::Bool) = current_inference.trace = trace
 
-function current_next_seq()
+macro inference_trace(str)
+	quote
+		current_inference.trace && println($(esc(str)))
+	end
+end
+
+function current_inference_next_seq()::Int64
 	next_seq = current_inference.next_seq
 	current_inference.next_seq += 1
 	return next_seq
 end
 
-current_working_memory() = current_inference.working_memory
+current_inference_working_memory()::SortedDict{Int64, Assertion} = current_inference.working_memory
 
-current_assertion_index() = current_inference.assertion_index
+current_inference_assertion_index()::Dict{Fact, Assertion} = current_inference.assertion_index
+
+current_inference_match_index()::Dict{Symbol, Vector{MatchNode}} = current_inference.match_index
+
+current_inference_initial_join()::JoinNode = current_inference.initial_join
+
+current_inference_rule_nodes()::Vector{RuleNode} = current_inference.rule_nodes
+
+current_inference_agenda()::SortedDict{Int, Vector{RuleInstance}} = current_inference.agenda
+
+current_inference_rule()::Rule = current_inference.rule
+current_inference_rule!(rule::Rule) = current_inference.rule = rule
+
+current_inference_strategy()::Symbol = current_inference.strategy
+current_inference_strategy!(strategy::Symbol) = current_inference.strategy = strategy
 
 # @inference macro
 
@@ -97,4 +129,12 @@ macro inference(inference::Inference, body)
 			end
 		end
 	end
+end
+
+" Print working memory."
+function wm(inference::Inference = current_inference)
+    println("Working Memory: $(length(inference.working_memory)) entries")
+    for assertion in values(inference.working_memory)
+        println("f-$(assertion.seq): $(assertion.fact)")
+    end
 end

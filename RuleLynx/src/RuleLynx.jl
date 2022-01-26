@@ -6,7 +6,7 @@ __precompile__()
 
 module RuleLynx
 
-import Base.show
+import Base.show, Base.join
 using DataStructures
 
 # variables.jl
@@ -16,27 +16,42 @@ export iswildcard, isvariable
 export Fact, isfact
 export Pattern, ispattern
 
+# assertions.jl
+export Assertion
+
 # bindings.jl
-export Bindings
+export Bindings, Match
+
+#counts.jl
 
 # unify.jl
 export unify
 
 # rules.jl
-export Rule, applyRule
+export Clause, Rule, RuleInstance, applyRule
 export Ruleset, addRule!, @rule
 
-# assertions.jl
-export Assertion
+# network.jl
+export AbstractNode, MatchNode, JoinNode, RuleNode
+export link_node, add_match
 
 # inference.jl
-export current_inference!, current_working_memory, current_assertion_index
+export current_inference!
+export current_inference_trace, current_inference_trace!, @inference_trace
+export current_inference_working_memory, current_inference_assertion_index
+export current_inference_match_index
+export current_inference_initial_index
+export current_inference_rule_nodes
+export current_inference_strategy, current_inference_strategy!
 export @inference
+export wm
 
 # control.jl
-export assert, @assert
+export assert, @assert, @replace
 export retract
-export wm
+export activate
+export start_inference
+export graph_network
 
 # RuleLynx.jl (this file)
 export greet
@@ -54,7 +69,7 @@ function greet()
             '      '                               |___/           |__/    
 
         A Hybrid Rule-Based Inference Engine and Language in Julia
-        RuleLynx.jl Version 0.2.1 2021-10-26
+        RuleLynx.jl Version 0.4.1 2021-12-14
         University of Colorado in Denver
         Dr. Doug Williams, Adam Durkes, Joe Heikoff
         """, color=:yellow)
@@ -65,10 +80,12 @@ end
 # Include the inference framework
 include("variables.jl")
 include("factoids.jl")
+include("assertions.jl")
 include("bindings.jl")
+include("counts.jl")
 include("unify.jl")
 include("rules.jl")
-include("assertions.jl")
+include("network.jl")
 include("inference.jl")
 include("control.jl")
 

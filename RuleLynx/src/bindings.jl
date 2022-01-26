@@ -11,3 +11,17 @@
 # values(<bindings>) to return the values in <bindings>.
 
 Bindings = Base.ImmutableDict{Symbol, Any}
+
+null_bindings = Base.ImmutableDict{Symbol, Any}()
+
+struct Match
+    assertions::Vector{Assertion}
+    bindings::Bindings
+end
+
+function Base.show(io::IO, match::Match)
+    binding_pairs = ["$(binding.first)=>$(binding.second)" for binding in match.bindings]
+    print(io, "([$(join(match.assertions, ", "))], {$(join(binding_pairs, ", "))})")
+end
+
+null_match = Match(Assertion[], null_bindings)

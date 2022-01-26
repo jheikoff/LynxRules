@@ -8,3 +8,7 @@ struct Assertion
     seq::Int64
     fact::Fact
 end
+
+function Base.show(io::IO, assertion::Assertion)
+    print(io, "f-$(assertion.seq)")
+end
